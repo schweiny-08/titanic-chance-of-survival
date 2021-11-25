@@ -6,8 +6,8 @@ import random as rnd
 class Multilayered_Perceptron:
 
     def __init__(self, training_inputs, training_targets, num_of_inputs, num_of_hidden_layers, num_of_hidden_layer_nodes, num_of_output_nodes, eta, mu):
-        self.training_inputs = training_inputs
-        self.training_targets = training_targets
+        self.training_inputs = np.array(training_inputs)
+        self.training_targets = np.array(training_targets)
 
         self.num_of_hidden_layers = num_of_hidden_layers
 
@@ -22,14 +22,14 @@ class Multilayered_Perceptron:
 
     def train(self):
         # TODO: Make the proper while loop
-        while self.epochs <= 100:
+        while self.good_facts < len(self.training_inputs):
             self.bad_facts = self.good_facts = 0
             self.feed_forward()
             self.epochs+=1
 
-            print(self.epochs)
-            print(self.good_facts)
-            print(self.bad_facts)
+            print("EPOCHS: " + str(self.epochs))
+            print("GOOD FACTS: " +  str(self.good_facts))
+            print("BAD FACTS" + str(self.bad_facts))
 
 
     def feed_forward(self):
@@ -51,15 +51,39 @@ class Multilayered_Perceptron:
             error = self.calculate_output_error(out[len(out)-1], self.training_targets[i])
 
             if(abs(error) > self.mu):
-                # TODO: Make backprop
                 self.bad_facts+=1
-                self.back_propagate()
+                # self.back_propagate(error=error, temp_weights=self.weights, outputs=out)
             else:
                 self.good_facts+=1
+            
+            self.back_propagate(error=error, temp_weights=self.weights, outputs=out)
+
+
+    def back_propagate(self, error, temp_weights, outputs):
+        for i in range(self.num_of_hidden_layers, -1,-1):
+            if i == self.num_of_hidden_layers:
+                layer_error = error
+            else:
+                prev_layer_weights = self.weights[i+1]
+                layer_error = self.calculate_hidden_error(prev_layer_delta, prev_layer_weights)
+
+            layer_delta = mf.calculate_delta(outputs[i], layer_error)
+            prev_layer_delta = layer_delta
+
+            change_in_weights = self.calculate_change_in_weights(layer_delta, outputs[i])
+
+            self.weights[i] += change_in_weights
+        return
 
     def calculate_output_error(self, out, target):
         error = target - out
         return error
 
-    def back_propagate(self):
-        return
+    def calculate_hidden_error(self, prev_layer_delta, prev_layer_weights):
+        error = np.matmul(prev_layer_delta, prev_layer_delta)
+        return error
+
+    def calculate_change_in_weights(self, delta, output):
+        temp = np.matmul(delta, output)
+        change_in_weights = self.eta * temp
+        return change_in_weights
