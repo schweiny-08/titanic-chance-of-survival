@@ -29,7 +29,7 @@ class Multilayered_Perceptron:
 
             print("EPOCHS: " + str(self.epochs))
             print("GOOD FACTS: " +  str(self.good_facts))
-            print("BAD FACTS" + str(self.bad_facts))
+            print("BAD FACTS: " + str(self.bad_facts))
 
 
     def feed_forward(self):
@@ -52,14 +52,11 @@ class Multilayered_Perceptron:
 
             if(abs(error) > self.mu):
                 self.bad_facts+=1
-                # self.back_propagate(error=error, temp_weights=self.weights, outputs=out)
+                self.back_propagate(error=error, temp_weights=self.weights, outputs=out, inputs=self.training_inputs[i])
             else:
                 self.good_facts+=1
             
-            self.back_propagate(error=error, temp_weights=self.weights, outputs=out)
-
-
-    def back_propagate(self, error, temp_weights, outputs):
+    def back_propagate(self, error, temp_weights, outputs, inputs):
         for i in range(self.num_of_hidden_layers, -1,-1):
             if i == self.num_of_hidden_layers:
                 layer_error = error
@@ -70,9 +67,14 @@ class Multilayered_Perceptron:
             layer_delta = mf.calculate_delta(outputs[i], layer_error)
             prev_layer_delta = layer_delta
 
-            change_in_weights = self.calculate_change_in_weights(layer_delta, outputs[i])
+            if i == 0:
+                change_in_weights = self.calculate_change_in_weights(layer_delta, inputs, self.weights[i])
+            else:   
+                change_in_weights = self.calculate_change_in_weights(layer_delta, outputs[i-1], self.weights[i])
 
-            self.weights[i] += change_in_weights
+            for j in range(len(self.weights[i])):
+                for k in range(len(self.weights[i][j])):
+                    self.weights[i][j][k] += change_in_weights[j][k]
         return
 
     def calculate_output_error(self, out, target):
@@ -80,10 +82,15 @@ class Multilayered_Perceptron:
         return error
 
     def calculate_hidden_error(self, prev_layer_delta, prev_layer_weights):
-        error = np.matmul(prev_layer_delta, prev_layer_delta)
+        prev_layer_weights = np.transpose(prev_layer_weights)
+        error = np.matmul(prev_layer_delta, prev_layer_weights)
         return error
 
-    def calculate_change_in_weights(self, delta, output):
-        temp = np.matmul(delta, output)
-        change_in_weights = self.eta * temp
+    def calculate_change_in_weights(self, delta, output, weights):
+        # to make sure its the same shape
+        change_in_weights = weights
+        for x in range(len(change_in_weights)):
+            for y in range(len(change_in_weights[x])):
+                change_in_weights[x][y] = self.eta * delta[y] * output[x]
+
         return change_in_weights
