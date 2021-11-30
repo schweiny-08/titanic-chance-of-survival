@@ -10,8 +10,8 @@ def separate_target_from_input(data_array):
     targets = [element[0] for element in data_array]
     inputs = [element[1:] for element in data_array]
     for i in range(len(inputs)):
-        inputs[i] = inputs[i] + 1
-    inputs = normalize_inputs(inputs)
+        inputs[i] = inputs[i]
+    # inputs = normalize_inputs(inputs)
     return targets, inputs
 
 def normalize_inputs(inputs):

@@ -24,8 +24,12 @@ class Math_Functions:
             else:
                 num_of_layer_input_nodes = num_of_layer_output_nodes = num_of_hidden_layer_nodes
 
-            temp_weights = [[rnd.uniform(-1, 1) for j in range(num_of_layer_output_nodes)] for k in range(num_of_layer_input_nodes)]
-            temp_weights = temp_weights
+            temp_weights = [[ 0.0 for j in range(num_of_layer_output_nodes)] for k in range(num_of_layer_input_nodes)]
+            
+            for i in range(len(temp_weights)):
+                for j in range(len(temp_weights[i])):
+                    temp_weights[i][j] = rnd.uniform(-1, 1)
+
             weights.append(temp_weights)
         return weights
 
