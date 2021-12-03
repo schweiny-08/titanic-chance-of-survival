@@ -7,8 +7,8 @@ import copy
 class Multilayered_Perceptron:
 
     def __init__(self, training_inputs, training_targets, num_of_inputs, num_of_hidden_layers, num_of_hidden_layer_nodes, num_of_output_nodes, eta, mu):
-        self.training_inputs = np.array(training_inputs)
-        self.training_targets = np.array(training_targets)
+        self.inputs = np.array(training_inputs)
+        self.targets = np.array(training_targets)
 
         self.num_of_hidden_layers = num_of_hidden_layers
 
@@ -22,28 +22,43 @@ class Multilayered_Perceptron:
         self.epochs = self.bad_facts = self.good_facts = 0
 
     def train(self):
-        # TODO: Make the proper while loop
-        while self.good_facts < len(self.training_inputs):
+        good_facts_final = []
+        while self.good_facts < len(self.inputs):
             self.bad_facts = self.good_facts = 0
-            self.feed_forward()
+            self.feed_forward(is_training=True)
             self.epochs+=1
+            good_facts_final.append(self.good_facts)
 
             print("EPOCHS: " + str(self.epochs))
             print("GOOD FACTS: " +  str(self.good_facts))
             print("BAD FACTS: " + str(self.bad_facts))
-            print("ACCURACY: " + str((self.good_facts/len(self.training_inputs))*100))
+            print("ACCURACY: " + str((self.good_facts/len(self.inputs))*100))
+        
+        return epochs, good_facts_final, self.weights
 
-    def feed_forward(self):
-        for i in range(len(self.training_inputs)):
+    def test(self, testing_inputs, testing_targets, weights):
+        self.bad_facts = self.good_facts = 0
+        self.weights = weights
+        self.inputs = testing_inputs
+        self.targets = testing_targets
+        self.feed_forward(is_training=False)
+
+        print("FINAL GOOD FACTS: " +  str(self.good_facts))
+        print("FINAL BAD FACTS: " + str(self.bad_facts))
+        print("FINAL ACCURACY: " + str((self.good_facts/len(self.inputs))*100))
+
+
+    def feed_forward(self, is_training=True):
+        for i in range(len(self.inputs)):
             net = []
             out = []
             for j in range(self.num_of_hidden_layers + 1):
                 if(j == 0):
-                    layer_input = self.training_inputs[i]
+                    layer_input = self.inputs[i]
                 else:
                     layer_input = temp_out
 
-                temp_weights = self.weights[j]
+                temp_weights = copy.deepcopy(self.weights[j])
 
                 temp_net = mf.activation_function(layer_input, temp_weights)
                 net.append(temp_net)
@@ -51,22 +66,16 @@ class Multilayered_Perceptron:
                 temp_out = mf.sigmoid_function(temp_net)
                 out.append(temp_out)
 
-            error = self.calculate_output_error(out[len(out)-1], self.training_targets[i])
+            error = self.calculate_output_error(out[len(out)-1], self.targets[i])
 
             if(abs(error) > self.mu):
                 self.bad_facts+=1
-                # np.savetxt("input.csv", self.training_inputs[i], delimiter=",")
-                # np.savetxt("hid_net.csv", net[j-1], delimiter=",")
-                # np.savetxt("hid_out.csv", out[j-1], delimiter=",")
-                # np.savetxt("out_net.csv", net[j], delimiter=",")
-                # np.savetxt("out_out.csv", out[j], delimiter=",")
-                # np.savetxt("weights_in_hid.csv", self.weights[j-1], delimiter=",")
-                # np.savetxt("weights_hid_out.csv", self.weights[j], delimiter=",")
-                self.back_propagate(error=error, temp_weights=self.weights, outputs=out, inputs=self.training_inputs[i])
+                if is_training:
+                    self.back_propagate(error=error, outputs=out, inputs=self.inputs[i])
             else:
                 self.good_facts+=1
             
-    def back_propagate(self, error, temp_weights, outputs, inputs):
+    def back_propagate(self, error, outputs, inputs):
         for i in range(self.num_of_hidden_layers, -1,-1):
             if i == self.num_of_hidden_layers:
                 layer_error = copy.deepcopy(error)
