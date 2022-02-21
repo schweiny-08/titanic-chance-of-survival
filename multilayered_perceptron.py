@@ -23,7 +23,8 @@ class Multilayered_Perceptron:
 
     def train(self):
         good_facts_final = []
-        while self.good_facts < len(self.inputs):
+        # Trains for 10k epochs
+        while self.epochs < 10000:
             self.bad_facts = self.good_facts = 0
             self.feed_forward(is_training=True)
             self.epochs+=1
@@ -34,7 +35,7 @@ class Multilayered_Perceptron:
             print("BAD FACTS: " + str(self.bad_facts))
             print("ACCURACY: " + str((self.good_facts/len(self.inputs))*100))
         
-        return epochs, good_facts_final, self.weights
+        return self.epochs, good_facts_final, self.weights
 
     def test(self, testing_inputs, testing_targets, weights):
         self.bad_facts = self.good_facts = 0

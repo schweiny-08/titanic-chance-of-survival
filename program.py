@@ -9,8 +9,6 @@ import pandas as pd
 data = data_prep.read_from_excel_to_array()
 np.random.shuffle(data)
 
-# print(len(data))
-
 training_data = data[:(math.ceil(len(data)*0.8))]
 testing_data = data[(math.ceil(len(data)*0.8)):]
 
@@ -33,14 +31,10 @@ np.savetxt("final_weights_in_hid.csv", weights[0], delimiter=",")
 np.savetxt("final_weights_hid_out.csv", weights[1], delimiter=",")
 data_prep.plot_training_graph(epochs, good_facts)
 
-testing_inputs, testing_targets = data_prep.separate_target_from_input(testing_data)
-
-# TODO: Load Weights
+testing_targets, testing_inputs = data_prep.separate_target_from_input(testing_data)
 
 print("------------------------------------------------------------------------------")
 print("TESTING RUN")
 print("------------------------------------------------------------------------------")
 
 mlp.test(testing_inputs, testing_targets, weights)
-
-# mlp.feed_forward()
